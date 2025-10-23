@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار الفرق التفاعلي</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        #answer-display {
+            font-size: 1.5em;
+            color: #61A4BC;
+            font-weight: bold;
+            margin-top: 20px;
+            display: none; /* يتم إخفاء الإجابة في البداية */
+        }
+        #show-answer-btn {
+            background-color: #61A4BC;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <button id="back-button" onclick="goToTeamScores(1)">الأبرة الفريق الأول</button>
+    <button id="back-button-team2" onclick="goToTeamScores(2)" style="left: 140px;">الأبرة الفريق الثاني</button>
+    <h1 id="main-title">الأبرة</h1>
+    <div class="container">
+        <div class="top-section">
+            <h2 id="question-display">السؤال سيظهر هنا...</h2>
+            <p id="answer-display">الإجابة ستظهر هنا...</p>
+            <p id="question-counter">السؤال 1 من 26</p>
+            <div class="controls">
+                <button id="show-answer-btn">عرض الإجابة</button>
+                <button id="next-question-btn">السؤال التالي</button>
+            </div>
+        </div>
+        <div class="bottom-sections">
+            <div class="team-section team-1">
+                <h3>الفريق 1 (الأزرق)</h3>
+                <p>النقاط: <span id="team1-score">10</span> <img src="bb.png" alt="بالونات" class="score-balloons"></p>
+                <div class="score-controls">
+                    <button class="score-btn add-btn" data-team="1" data-action="add">+</button>
+                    <button class="score-btn subtract-btn" data-team="1" data-action="subtract">-</button>
+                </div>
+            </div>
+            <div class="team-section team-2">
+                <h3>الفريق 2 (الأحمر)</h3>
+                <p>النقاط: <span id="team2-score">10</span> <img src="bb.png" alt="بالونات" class="score-balloons"></p>
+                <div class="score-controls">
+                    <button class="score-btn add-btn" data-team="2" data-action="add">+</button>
+                    <button class="score-btn subtract-btn" data-team="2" data-action="subtract">-</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        const allPrizes = [
+            ...Array(1).fill("40 نقطة"),
+            ...Array(2).fill("30 نقطة"),
+            ...Array(3).fill("20 نقطة"),
+            ...Array(5).fill("10 نقاط"),
+            ...Array(3).fill("حظ أوفر"),
+            ...Array(1).fill("10k كريديت"),
+            ...Array(1).fill("5k كريديت"),
+            ...Array(1).fill("2k كريديت"),
+            ...Array(3).fill("1k كريديت")
+        ];
+
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        function goToTeamScores(teamNumber) {
+            const team1Score = parseInt(document.getElementById('team1-score').textContent);
+            const team2Score = parseInt(document.getElementById('team2-score').textContent);
+
+            if (!localStorage.getItem('team1Prizes') || (team1Score + team2Score) !== JSON.parse(localStorage.getItem('team1Prizes')).length + JSON.parse(localStorage.getItem('team2Prizes')).length) {
+                const shuffledPrizes = shuffle(allPrizes);
+
+                const team1Prizes = shuffledPrizes.slice(0, team1Score);
+                const team2Prizes = shuffledPrizes.slice(team1Score, team1Score + team2Score);
+
+                localStorage.setItem('team1Prizes', JSON.stringify(team1Prizes));
+                localStorage.setItem('team2Prizes', JSON.stringify(team2Prizes));
+                localStorage.setItem('team1OpenedBalloons', JSON.stringify({}));
+                localStorage.setItem('team2OpenedBalloons', JSON.stringify({}));
+            }
+            
+            localStorage.setItem('displayTeam', teamNumber);
+            window.location.href = 'team_scores.html';
+        }
+    </script>
+</body>
+</html>

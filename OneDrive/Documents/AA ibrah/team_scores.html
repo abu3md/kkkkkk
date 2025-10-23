@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بالونات الجوائز</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* التنسيقات المتعلقة بالصفحة الثانية */
+        body {
+            font-family: 'Changa', sans-serif;
+            background-color: #222831;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding-top: 50px;
+            direction: rtl;
+            color: #DFD0B8;
+        }
+        h1 {
+            color: #DFD0B8;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+        }
+        .balloons-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .balloon-wrapper {
+            position: relative;
+            width: calc(20% - 16px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #393e46;
+            border-radius: 10px;
+            box-sizing: border-box;
+            padding: 20px 0;
+            min-height: 120px;
+        }
+        .balloon-number {
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 1.2em;
+            font-weight: 700;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            pointer-events: none;
+        }
+        .balloon {
+            width: 80px;
+            height: auto;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+        .balloon:hover {
+            transform: scale(1.1);
+        }
+        .prize-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #DFD0B8;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
+            animation: fadeIn 0.5s ease-out;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+        .prize-display .prize-value {
+            font-size: 1.4em;
+        }
+        .prize-display .prize-unit {
+            font-size: 1em;
+            margin-top: 5px;
+        }
+        .opened {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(100%);
+        }
+        .final-scores {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-top: 30px;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #DFD0B8;
+        }
+        .final-scores span {
+            color: #61A4BC;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .team-switcher {
+            margin-bottom: 20px;
+        }
+        .team-switcher button {
+            padding: 10px 20px;
+            font-size: 1.1em;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            margin: 0 5px;
+            font-family: 'Changa', sans-serif;
+            color: white;
+        }
+        .team-switcher .team-1-btn {
+            background-color: #093e58;
+        }
+        .team-switcher .team-2-btn {
+            background-color: #681212;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="team-title">بالونات الجوائز</h1>
+    <div class="team-switcher">
+        <button class="team-1-btn" onclick="displayTeam(1)">الفريق الأول</button>
+        <button class="team-2-btn" onclick="displayTeam(2)">الفريق الثاني</button>
+    </div>
+    <div class="balloons-container" id="balloons-container">
+        </div>
+    <div class="final-scores">
+        <p>نقاط الفريق الأول: <span id="team1-prize-score">0</span></p>
+        <p>نقاط الفريق الثاني: <span id="team2-prize-score">0</span></p>
+    </div>
+    <script>
+        function renderBalloons() {
+            const balloonsContainer = document.getElementById('balloons-container');
+            const teamScores = JSON.parse(localStorage.getItem('teamPrizeScores')) || { team1: 0, team2: 0 };
+            
+            const displayTeam = parseInt(localStorage.getItem('displayTeam'));
+            const openedBalloons = JSON.parse(localStorage.getItem(`team${displayTeam}OpenedBalloons`)) || {};
+            const teamPrizes = JSON.parse(localStorage.getItem(`team${displayTeam}Prizes`)) || [];
+
+            document.getElementById('team1-prize-score').textContent = teamScores.team1;
+            document.getElementById('team2-prize-score').textContent = teamScores.team2;
+
+            while (balloonsContainer.firstChild) {
+                balloonsContainer.removeChild(balloonsContainer.firstChild);
+            }
+            
+            for (let i = 0; i < teamPrizes.length; i++) {
+                const balloonWrapper = document.createElement('div');
+                balloonWrapper.classList.add('balloon-wrapper');
+                
+                const balloon = document.createElement('img');
+                balloon.src = 'popp.png';
+                balloon.alt = 'بالونة';
+                balloon.classList.add('balloon');
+                balloon.dataset.index = i;
+                
+                const balloonNumber = document.createElement('span');
+                balloonNumber.classList.add('balloon-number');
+                balloonNumber.textContent = i + 1;
+
+                balloonWrapper.appendChild(balloonNumber);
+                
+                if (openedBalloons[i]) {
+                    const prizeDisplay = document.createElement('div');
+                    prizeDisplay.classList.add('prize-display');
+
+                    const prizeString = teamPrizes[i];
+                    const prizeParts = prizeString.split(' ');
+                    const valuePart = document.createElement('span');
+                    valuePart.classList.add('prize-value');
+                    valuePart.textContent = prizeParts[0];
+                    prizeDisplay.appendChild(valuePart);
+                    
+                    if (prizeParts.length > 1) {
+                        const unitPart = document.createElement('span');
+                        unitPart.classList.add('prize-unit');
+                        unitPart.textContent = prizeParts.slice(1).join(' ');
+                        prizeDisplay.appendChild(unitPart);
+                    }
+
+                    balloonWrapper.appendChild(prizeDisplay);
+                    balloonWrapper.classList.add('opened');
+                } else {
+                    balloonWrapper.appendChild(balloon);
+                    balloon.addEventListener('click', function() {
+                        handleBalloonClick(this);
+                    });
+                }
+                
+                balloonsContainer.appendChild(balloonWrapper);
+            }
+        }
+        
+        function handleBalloonClick(balloonElement) {
+            const index = parseInt(balloonElement.dataset.index);
+            const displayTeam = parseInt(localStorage.getItem('displayTeam'));
+            
+            const teamPrizes = JSON.parse(localStorage.getItem(`team${displayTeam}Prizes`));
+            const prize = teamPrizes[index];
+            
+            const teamScores = JSON.parse(localStorage.getItem('teamPrizeScores')) || { team1: 0, team2: 0 };
+
+            let prizeValue = 0;
+            if (typeof prize === 'string') {
+                const prizeText = prize.toLowerCase();
+                
+                // تعديل جديد: إذا كانت الجائزة تحتوي على كلمة "كريديت"، لا يتم إضافة قيمتها
+                if (prizeText.includes('كريديت')) {
+                    prizeValue = 0;
+                } else if (prizeText.includes('k')) {
+                    const value = parseInt(prizeText);
+                    if (!isNaN(value)) {
+                        prizeValue = value * 1000;
+                    }
+                } else {
+                    const match = prize.match(/(\d+)/);
+                    if (match) {
+                        prizeValue = parseInt(match[0]);
+                    }
+                }
+            } else if (typeof prize === 'number') {
+                prizeValue = prize;
+            }
+
+            if (prizeValue > 0) {
+                if (displayTeam === 1) {
+                    teamScores.team1 += prizeValue;
+                } else {
+                    teamScores.team2 += prizeValue;
+                }
+            }
+            
+            const openedBalloons = JSON.parse(localStorage.getItem(`team${displayTeam}OpenedBalloons`)) || {};
+            openedBalloons[index] = true;
+            localStorage.setItem(`team${displayTeam}OpenedBalloons`, JSON.stringify(openedBalloons));
+            localStorage.setItem('teamPrizeScores', JSON.stringify(teamScores));
+
+            const prizeDisplay = document.createElement('div');
+            prizeDisplay.classList.add('prize-display');
+
+            const prizeString = teamPrizes[index];
+            const prizeParts = prizeString.split(' ');
+            const valuePart = document.createElement('span');
+            valuePart.classList.add('prize-value');
+            valuePart.textContent = prizeParts[0];
+            prizeDisplay.appendChild(valuePart);
+            
+            if (prizeParts.length > 1) {
+                const unitPart = document.createElement('span');
+                unitPart.classList.add('prize-unit');
+                unitPart.textContent = prizeParts.slice(1).join(' ');
+                prizeDisplay.appendChild(unitPart);
+            }
+
+            const balloonParent = balloonElement.parentElement;
+
+            balloonElement.remove();
+            balloonParent.appendChild(prizeDisplay);
+
+            balloonParent.classList.add('opened');
+
+            document.getElementById('team1-prize-score').textContent = teamScores.team1;
+            document.getElementById('team2-prize-score').textContent = teamScores.team2;
+        }
+
+        function displayTeam(teamNumber) {
+            localStorage.setItem('displayTeam', teamNumber);
+            const teamTitle = document.getElementById('team-title');
+            teamTitle.textContent = teamNumber === 1 ? 'بالونات الفريق الأول' : 'بالونات الفريق الثاني';
+            renderBalloons();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const initialTeam = parseInt(localStorage.getItem('displayTeam')) || 1;
+            displayTeam(initialTeam);
+        });
+    </script>
+</body>
+</html>
